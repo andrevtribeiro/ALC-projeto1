@@ -25,18 +25,33 @@ class Enc:
 
     def create_initial_constraints(self):
         self.add_constraint([neg(self.v(1))])
-        for i in range(self.node_count):
-            lefts=[]
-            mini=min(2*i,self.node_count)
-            for e in range(i+1,mini):
+        for i in range(1,self.node_count+1):
+            lefts=[self.v(i)]
+            mini=min(2*i,self.node_count-1)         
+            for e in range(i+1,mini+1):
                 if e%2==0:
-                    self.add_constraint([neg(self.v(i)),neg(self.l(i,e))])
-                    self.add_constraint([neg(self.l(i,e)),self.r(i,e+1)])
-                    self.add_constraint([self.l(i,e),neg(self.r(i,e+1))])
-                    lefts+=[self.l(i,e)]
-                    if(e+2<mini):
-                        self.add_constraint(self.v(i),neg(self.l(i,e)),neg(self.l(i,e+2)))
-                self.add_constraint(lefts)
+                    self.add_constraint([neg(self.v(i)),neg(self.l(i,e))]) #2
+                    self.add_constraint([neg(self.l(i,e)),self.r(i,e+1)]) #3
+                    self.add_constraint([self.l(i,e),neg(self.r(i,e+1))]) #3
+                    lefts+=[self.l(i,e)] #4
+                    for a in range(e+2,mini+1,2):
+                        self.add_constraint([self.v(i),neg(self.l(i,e)),neg(self.l(i,a))]) #4 combinacoes para no maximo uma verdade
+                    self.add_constraint([neg(self.p(e,i)),self.l(i,e)]) #5 left
+                    self.add_constraint([self.p(e,i),neg(self.l(i,e))]) #5
+                    self.add_constraint([neg(self.p(e+1,i)),self.r(i,e+1)]) #5 right
+                    self.add_constraint([self.p(e+1,i),neg(self.r(i,e+1))]) #5 right
+        for j in range(2,self.node_count+1):
+            mini=min(j-1,self.node_count)
+            parents=[]   
+            for i in range(j//2,mini+1):
+                parents+=[self.p(j,i)]
+                for a in range(i+1,mini+1):
+                    self.add_constraint([neg(self.p(j,i)),neg(self.p(j,a))])
+            self.add_constraint(parents)
+
+
+            if len(lefts)>1:
+                self.add_constraint(lefts) #4 pelo menos uma verdade
         print(self.constraints)
     
 
@@ -144,7 +159,7 @@ def parse(f):
     return (nms, samples)
 
 
-
+'''
 if __name__ == "__main__":
     debug_solver = False 
 
@@ -172,3 +187,7 @@ if __name__ == "__main__":
         print("UNSAT")
     else:
         print("ERROR: something went wrong with the solver")
+'''
+e=Enc(2,3)
+e.create_initial_constraints()
+print(e.mk_cnf(True))
