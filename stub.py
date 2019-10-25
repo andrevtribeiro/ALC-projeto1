@@ -3,7 +3,7 @@
 # Author:  mikolas
 # Created on:  Sat Oct 12 10:30:54 WEST 2019
 # Copyright (C) 2019, Mikolas Janota
-import sys,subprocess 
+import sys,subprocess
 
 solver = './lingeling'
 
@@ -17,43 +17,84 @@ class Enc:
         self.input_count = input_count
         self.constraints = []
         self.fresh = 0
-        
+
     def v(self,i): return 'v_{}'.format(i)
     def l(self,i,e): return 'l_{}{}'.format(i,e)
     def r(self,i,e): return 'r_{}{}'.format(i,e)
     def p(self,i,e): return 'p_{}{}'.format(i,e)
+    def a(self,i,e): return 'a_{}{}'.format(i,e)
+    def c(self,i): return 'c_{}'.format(i)
+    def d0(self,i,e): return 'd0_{}{}'.format(i,e)
+    def d1(self,i,e): return 'd1_{}{}'.format(i,e)
+
 
     def create_initial_constraints(self):
         self.add_constraint([neg(self.v(1))])
         for i in range(1,self.node_count+1):
-            lefts=[self.v(i)]
-            mini=min(2*i,self.node_count-1)         
+            lefts = [self.v(i)]
+            mini = min(2*i,self.node_count-1)
             for e in range(i+1,mini+1):
-                if e%2==0:
+                if e%2 == 0:
                     self.add_constraint([neg(self.v(i)),neg(self.l(i,e))]) #2
                     self.add_constraint([neg(self.l(i,e)),self.r(i,e+1)]) #3
                     self.add_constraint([self.l(i,e),neg(self.r(i,e+1))]) #3
                     lefts+=[self.l(i,e)] #4
                     for a in range(e+2,mini+1,2):
-                        self.add_constraint([self.v(i),neg(self.l(i,e)),neg(self.l(i,a))]) #4 combinacoes para no maximo uma verdade
+                        self.add_constraint([neg(self.l(i,e)),neg(self.l(i,a))]) #4 combinacoes para no maximo uma verdade
                     self.add_constraint([neg(self.p(e,i)),self.l(i,e)]) #5 left
                     self.add_constraint([self.p(e,i),neg(self.l(i,e))]) #5
                     self.add_constraint([neg(self.p(e+1,i)),self.r(i,e+1)]) #5 right
                     self.add_constraint([self.p(e+1,i),neg(self.r(i,e+1))]) #5 right
+
+            if len(lefts)>1:
+                self.add_constraint(lefts) #4 pelo menos uma verdade
+
         for j in range(2,self.node_count+1):
             mini=min(j-1,self.node_count)
-            parents=[]   
+            parents=[]
             for i in range(j//2,mini+1):
                 parents+=[self.p(j,i)]
                 for a in range(i+1,mini+1):
                     self.add_constraint([neg(self.p(j,i)),neg(self.p(j,a))])
             self.add_constraint(parents)
 
-
-            if len(lefts)>1:
-                self.add_constraint(lefts) #4 pelo menos uma verdade
         print(self.constraints)
-    
+
+    def create_other_constraints(self,samples):
+        for i in range(1,self.input_count+1):
+            self.add_constraint([neg(self.d0(i,1))])
+            self.add_constraint([neg(self.d1(i,1))])
+        for r in range(1,self.input_count+1):
+            for j in range(2,self.node_count+1):
+                for i in range(j//2,j):
+                    self.add_constraint([neg(self.d0(r,j)),self.mk_and(self.p(j,i),self.d0(r,i)),self.mk_and(self.a(r,i),self.r(i,j))])           #7
+                    self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i))),neg(self.mk_and(self.a(r,i),self.r(i,j)))])      #7
+                    self.add_constraint([neg(self.d1(r,j)),self.mk_and(self.p(j,i),self.d1(r,i)),self.mk_and(self.a(r,i),self.l(i,j))])           #8
+                    self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i))),neg(self.mk_and(self.a(r,i),self.l(i,j)))])      #8
+        for i in range(1,self.node_count+1):
+            list = [self.v(i)]
+            for r in range(1,self.input_count+1):
+                list+=[self.a(r,i)]
+                if i > 2:
+                    self.add_constraint([neg(self.v(i)),neg(self.a(r,i))]) #11
+                for k in range(r+1,self.input_count+1):
+                    self.add_constraint([neg(self.a(r,i)),neg(self.a(k,i))]) #10
+            self.add_constraint(list) #10
+        for j in range(1,self.node_count+1):
+            for r in range(1,self.input_count+1):
+                for i in range(0,len(samples)):
+                    if samples[i][-1] == 1:
+                        if samples[i][r-1] == 0:
+                            self.add_constraint([neg(self.v(j)),self.c(j),self.d0(r,j)]) #12
+                        else:
+                            self.add_constraint([neg(self.v(j)),self.c(j),self.d1(r,j)]) #12
+                    else:
+                        if samples[i][r-1] == 0:
+                            self.add_constraint([neg(self.v(j)),neg(self.c(j)),self.d0(r,j)]) #13
+                        else:
+                            self.add_constraint([neg(self.v(j)),neg(self.c(j)),self.d1(r,j)]) #13
+        print(self.constraints)
+
 
     def add_constraint(self, constraint):
         '''add constraints, which is a list of literals'''
@@ -131,7 +172,7 @@ class Enc:
         self.add_constraint([self.y(1), self.mk_and(self.y(2),self.y(3))])
         # -y1
         self.add_constraint([neg(self.y(1))])'''
-        
+
 def get_model(lns):
     vals=dict()
     found=False
@@ -159,15 +200,17 @@ def parse(f):
     return (nms, samples)
 
 
-'''
+
 if __name__ == "__main__":
-    debug_solver = False 
+    debug_solver = False
 
     print("# reading from stdin")
     nms, samples = parse(sys.stdin)
     print("# encoding")
     e = Enc(nms[0], nms[1])
-    e.enc(samples)
+    print(samples)
+    e.create_other_constraints(samples)
+'''    e.enc(samples)
     print("# encoded constraints")
     print("# " + "\n# ".join(map(str, e.constraints)))
     print("# END encoded constraints")
@@ -186,8 +229,4 @@ if __name__ == "__main__":
     elif rc == 20:
         print("UNSAT")
     else:
-        print("ERROR: something went wrong with the solver")
-'''
-e=Enc(2,3)
-e.create_initial_constraints()
-print(e.mk_cnf(True))
+        print("ERROR: something went wrong with the solver")'''
