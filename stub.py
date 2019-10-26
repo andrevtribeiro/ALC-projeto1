@@ -64,40 +64,39 @@ class Enc:
             self.add_constraint([neg(self.d1(i,1))]) #8
         for r in range(1,self.input_count+1):
             for j in range(2,self.node_count+1):
+                list_d0 = [neg(self.d0(r,j))]
+                list_d1 = [neg(self.d1(r,j))]
                 for i in range(j//2,j):
                     if j%2 != 0 and j <= self.node_count and i != j-1:
-                        self.add_constraint([neg(self.d0(r,j)),self.mk_and(self.p(j,i),self.d0(r,i)),self.mk_and(self.a(r,i),self.r(i,j))])               #7
+                        print("FIRST")
+                        list_d0 += [self.mk_and(self.p(j,i),self.d0(r,i))]
+                        list_d0 += [self.mk_and(self.a(r,i),self.r(i,j))]
                         self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])                                                    #7
                         self.add_constraint([self.d0(r,j),neg(self.mk_and(self.a(r,i),self.r(i,j)))])                                                     #7
                     else:
-                        print("SECOND")
-                        print([neg(self.d0(r,j)),self.mk_and(self.p(j,i),self.d0(r,i))])
-                        print([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])
-                        self.add_constraint([neg(self.d0(r,j)),self.mk_and(self.p(j,i),self.d0(r,i))])                                                    #7
+                        list_d0 += [self.mk_and(self.p(j,i),self.d0(r,i))]
                         self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])                                                    #7
                     if j%2 == 0 and j <= self.node_count-1:
                         print("THIRD")
-                        print([neg(self.d1(r,j)),self.mk_and(self.p(j,i),self.d1(r,i)),self.mk_and(self.a(r,i),self.l(i,j))])
-                        print([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])
-                        print([self.d1(r,j),neg(self.mk_and(self.a(r,i),self.l(i,j)))])
-                        self.add_constraint([neg(self.d1(r,j)),self.mk_and(self.p(j,i),self.d1(r,i)),self.mk_and(self.a(r,i),self.l(i,j))])               #8
+                        list_d1 += [self.mk_and(self.p(j,i),self.d1(r,i))]
+                        list_d1 += [self.mk_and(self.a(r,i),self.l(i,j))]
                         self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])                                                    #8
                         self.add_constraint([self.d1(r,j),neg(self.mk_and(self.a(r,i),self.l(i,j)))])                                                     #8
                     else:
                         print("FOURTH")
-                        print([neg(self.d1(r,j)),self.mk_and(self.p(j,i),self.d1(r,i))])
-                        print([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])
-                        self.add_constraint([neg(self.d1(r,j)),self.mk_and(self.p(j,i),self.d1(r,i))])                                                    #8
+                        list_d1 += [self.mk_and(self.p(j,i),self.d1(r,i))]
                         self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])                                                    #8
+                self.add_constraint(list_d0)
+                self.add_constraint(list_d1)
         '''for i in range(1,self.node_count+1):
-            list = [self.v(i)]
+            lista = [self.v(i)]
             for r in range(1,self.input_count+1):
-                list+=[self.a(r,i)]
-                if i > 2:
+                lista+=[self.a(r,i)]
+                if i >= 2:
                     self.add_constraint([neg(self.v(i)),neg(self.a(r,i))]) #11
                 for k in range(r+1,self.input_count+1):
                     self.add_constraint([neg(self.a(r,i)),neg(self.a(k,i))]) #10
-            self.add_constraint(list) #10
+            self.add_constraint(lista) #10
         for j in range(1,self.node_count+1):
             for r in range(1,self.input_count+1):
                 for i in range(0,len(samples)):
