@@ -58,28 +58,38 @@ class Enc:
                     self.add_constraint([neg(self.p(j,i)),neg(self.p(j,a))])
             self.add_constraint(parents)
 
-        print(self.constraints)
-
     def create_other_constraints(self,samples):
         for i in range(1,self.input_count+1):
-            self.add_constraint([neg(self.d0(i,1))])
-            self.add_constraint([neg(self.d1(i,1))])
+            self.add_constraint([neg(self.d0(i,1))]) #7
+            self.add_constraint([neg(self.d1(i,1))]) #8
         for r in range(1,self.input_count+1):
             for j in range(2,self.node_count+1):
                 for i in range(j//2,j):
-                    print([neg(self.d0(r,j)),self.mk_and(self.p(j,i),self.d0(r,i)),self.mk_and(self.a(r,i),self.r(i,j))])
-                    print([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])
-                    print([self.d0(r,j),neg(self.mk_and(self.a(r,i),self.r(i,j)))])
-                    self.add_constraint([neg(self.d0(r,j)),self.mk_and(self.p(j,i),self.d0(r,i)),self.mk_and(self.a(r,i),self.r(i,j))])           #7
-                    self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])                                                #7
-                    self.add_constraint([self.d0(r,j),neg(self.mk_and(self.a(r,i),self.r(i,j)))])                                                 #7
-                    print([neg(self.d1(r,j)),self.mk_and(self.p(j,i),self.d1(r,i)),self.mk_and(self.a(r,i),self.l(i,j))])
-                    print([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])
-                    print([self.d1(r,j),neg(self.mk_and(self.a(r,i),self.l(i,j)))])
-                    self.add_constraint([neg(self.d1(r,j)),self.mk_and(self.p(j,i),self.d1(r,i)),self.mk_and(self.a(r,i),self.l(i,j))])           #8
-                    self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])                                                #8
-                    self.add_constraint([self.d1(r,j),neg(self.mk_and(self.a(r,i),self.l(i,j)))])                                                 #8
-        for i in range(1,self.node_count+1):
+                    if j%2 != 0 and j <= self.node_count and i != j-1:
+                        self.add_constraint([neg(self.d0(r,j)),self.mk_and(self.p(j,i),self.d0(r,i)),self.mk_and(self.a(r,i),self.r(i,j))])               #7
+                        self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])                                                    #7
+                        self.add_constraint([self.d0(r,j),neg(self.mk_and(self.a(r,i),self.r(i,j)))])                                                     #7
+                    else:
+                        print("SECOND")
+                        print([neg(self.d0(r,j)),self.mk_and(self.p(j,i),self.d0(r,i))])
+                        print([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])
+                        self.add_constraint([neg(self.d0(r,j)),self.mk_and(self.p(j,i),self.d0(r,i))])                                                    #7
+                        self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])                                                    #7
+                    if j%2 == 0 and j <= self.node_count-1:
+                        print("THIRD")
+                        print([neg(self.d1(r,j)),self.mk_and(self.p(j,i),self.d1(r,i)),self.mk_and(self.a(r,i),self.l(i,j))])
+                        print([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])
+                        print([self.d1(r,j),neg(self.mk_and(self.a(r,i),self.l(i,j)))])
+                        self.add_constraint([neg(self.d1(r,j)),self.mk_and(self.p(j,i),self.d1(r,i)),self.mk_and(self.a(r,i),self.l(i,j))])               #8
+                        self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])                                                    #8
+                        self.add_constraint([self.d1(r,j),neg(self.mk_and(self.a(r,i),self.l(i,j)))])                                                     #8
+                    else:
+                        print("FOURTH")
+                        print([neg(self.d1(r,j)),self.mk_and(self.p(j,i),self.d1(r,i))])
+                        print([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])
+                        self.add_constraint([neg(self.d1(r,j)),self.mk_and(self.p(j,i),self.d1(r,i))])                                                    #8
+                        self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])                                                    #8
+        '''for i in range(1,self.node_count+1):
             list = [self.v(i)]
             for r in range(1,self.input_count+1):
                 list+=[self.a(r,i)]
@@ -101,7 +111,7 @@ class Enc:
                             self.add_constraint([neg(self.v(j)),neg(self.c(j)),self.d0(r,j)]) #13
                         else:
                             self.add_constraint([neg(self.v(j)),neg(self.c(j)),self.d1(r,j)]) #13
-
+'''
 
     def add_constraint(self, constraint):
         '''add constraints, which is a list of literals'''
@@ -167,18 +177,8 @@ class Enc:
         return rv
 
     def enc(self, samples):
-        '''encode the problem'''
-        '''
-        # -x1 | -x2
-        self.add_constraint([neg(self.x(1)), neg(self.x(2))])
-        # x1 | x2
-        self.add_constraint([self.x(1), self.x(2)])
-        # x1 <=> x2
-        self.add_iff(self.x(3), self.x(4))
-        # y1 | (y2 & y3)
-        self.add_constraint([self.y(1), self.mk_and(self.y(2),self.y(3))])
-        # -y1
-        self.add_constraint([neg(self.y(1))])'''
+        self.create_initial_constraints()
+        self.create_other_constraints(samples)
 
 def get_model(lns):
     vals=dict()
@@ -215,14 +215,16 @@ if __name__ == "__main__":
     nms, samples = parse(sys.stdin)
     print("# encoding")
     e = Enc(nms[0], nms[1])
-    print(samples)
-    e.create_other_constraints(samples)
-'''    e.enc(samples)
-    print("# encoded constraints")
+    e.enc(samples)
+    print("ola")
+    print(3//2)
+    '''print("# encoded constraints")
     print("# " + "\n# ".join(map(str, e.constraints)))
     print("# END encoded constraints")
     print("# sending to solver '" + solver + "'")
     cnf = e.mk_cnf(False)
+    print(cnf)
+
     p = subprocess.Popen(solver, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (po, pe) = p.communicate(input=bytes(cnf, encoding ='utf-8'))
     if debug_solver:
