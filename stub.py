@@ -67,10 +67,18 @@ class Enc:
         for r in range(1,self.input_count+1):
             for j in range(2,self.node_count+1):
                 for i in range(j//2,j):
+                    print([neg(self.d0(r,j)),self.mk_and(self.p(j,i),self.d0(r,i)),self.mk_and(self.a(r,i),self.r(i,j))])
+                    print([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])
+                    print([self.d0(r,j),neg(self.mk_and(self.a(r,i),self.r(i,j)))])
                     self.add_constraint([neg(self.d0(r,j)),self.mk_and(self.p(j,i),self.d0(r,i)),self.mk_and(self.a(r,i),self.r(i,j))])           #7
-                    self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i))),neg(self.mk_and(self.a(r,i),self.r(i,j)))])      #7
+                    self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])                                                #7
+                    self.add_constraint([self.d0(r,j),neg(self.mk_and(self.a(r,i),self.r(i,j)))])                                                 #7
+                    print([neg(self.d1(r,j)),self.mk_and(self.p(j,i),self.d1(r,i)),self.mk_and(self.a(r,i),self.l(i,j))])
+                    print([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])
+                    print([self.d1(r,j),neg(self.mk_and(self.a(r,i),self.l(i,j)))])
                     self.add_constraint([neg(self.d1(r,j)),self.mk_and(self.p(j,i),self.d1(r,i)),self.mk_and(self.a(r,i),self.l(i,j))])           #8
-                    self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i))),neg(self.mk_and(self.a(r,i),self.l(i,j)))])      #8
+                    self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])                                                #8
+                    self.add_constraint([self.d1(r,j),neg(self.mk_and(self.a(r,i),self.l(i,j)))])                                                 #8
         for i in range(1,self.node_count+1):
             list = [self.v(i)]
             for r in range(1,self.input_count+1):
@@ -93,7 +101,6 @@ class Enc:
                             self.add_constraint([neg(self.v(j)),neg(self.c(j)),self.d0(r,j)]) #13
                         else:
                             self.add_constraint([neg(self.v(j)),neg(self.c(j)),self.d1(r,j)]) #13
-        print(self.constraints)
 
 
     def add_constraint(self, constraint):
