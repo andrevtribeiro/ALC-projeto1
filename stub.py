@@ -88,7 +88,7 @@ class Enc:
                         self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])                                                    #8
                 self.add_constraint(list_d0)
                 self.add_constraint(list_d1)
-        '''for i in range(1,self.node_count+1):
+        for i in range(1,self.node_count+1):
             lista = [self.v(i)]
             for r in range(1,self.input_count+1):
                 lista+=[self.a(r,i)]
@@ -98,19 +98,23 @@ class Enc:
                     self.add_constraint([neg(self.a(r,i)),neg(self.a(k,i))]) #10
             self.add_constraint(lista) #10
         for j in range(1,self.node_count+1):
+            list_true=[neg(self.v(j)),self.c(j)]
+            list_false=[neg(self.v(j)),neg(self.c(j))]
             for r in range(1,self.input_count+1):
                 for i in range(0,len(samples)):
                     if samples[i][-1] == 1:
                         if samples[i][r-1] == 0:
-                            self.add_constraint([neg(self.v(j)),self.c(j),self.d0(r,j)]) #12
+                           list_true+=[self.d0(r,j)]#12
                         else:
-                            self.add_constraint([neg(self.v(j)),self.c(j),self.d1(r,j)]) #12
+                            list_true+=[self.d1(r,j)] #12
                     else:
                         if samples[i][r-1] == 0:
-                            self.add_constraint([neg(self.v(j)),neg(self.c(j)),self.d0(r,j)]) #13
+                            list_false+=[self.d0(r,j)] #13
                         else:
-                            self.add_constraint([neg(self.v(j)),neg(self.c(j)),self.d1(r,j)]) #13
-'''
+                            list_false+=[self.d1(r,j)] #13
+            self.add_constraint(list_true)
+            self.add_constraint(list_false)
+
 
     def add_constraint(self, constraint):
         '''add constraints, which is a list of literals'''
