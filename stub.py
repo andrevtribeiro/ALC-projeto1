@@ -5,7 +5,7 @@
 # Copyright (C) 2019, Mikolas Janota
 import sys,subprocess
 
-solver = './lingeling'
+solver = './lingeling-bcj-78ebb86-180517/lingeling'
 
 def neg(l): return l[1:] if l[0] == '-' else '-'+l
 def var(l): return l[1:] if l[0] == '-' else l
@@ -68,7 +68,6 @@ class Enc:
                 list_d1 = [neg(self.d1(r,j))]
                 for i in range(j//2,j):
                     if j%2 != 0 and j <= self.node_count and i != j-1:
-                        print("FIRST")
                         list_d0 += [self.mk_and(self.p(j,i),self.d0(r,i))]
                         list_d0 += [self.mk_and(self.a(r,i),self.r(i,j))]
                         self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])                                                    #7
@@ -77,13 +76,13 @@ class Enc:
                         list_d0 += [self.mk_and(self.p(j,i),self.d0(r,i))]
                         self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])                                                    #7
                     if j%2 == 0 and j <= self.node_count-1:
-                        print("THIRD")
+                        
                         list_d1 += [self.mk_and(self.p(j,i),self.d1(r,i))]
                         list_d1 += [self.mk_and(self.a(r,i),self.l(i,j))]
                         self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])                                                    #8
                         self.add_constraint([self.d1(r,j),neg(self.mk_and(self.a(r,i),self.l(i,j)))])                                                     #8
                     else:
-                        print("FOURTH")
+                        
                         list_d1 += [self.mk_and(self.p(j,i),self.d1(r,i))]
                         self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])                                                    #8
                 self.add_constraint(list_d0)
@@ -219,14 +218,13 @@ if __name__ == "__main__":
     print("# encoding")
     e = Enc(nms[0], nms[1])
     e.enc(samples)
-    print("ola")
-    print(3//2)
-    '''print("# encoded constraints")
+    
+    print("# encoded constraints")
     print("# " + "\n# ".join(map(str, e.constraints)))
     print("# END encoded constraints")
     print("# sending to solver '" + solver + "'")
     cnf = e.mk_cnf(False)
-    print(cnf)
+    #print(cnf)
 
     p = subprocess.Popen(solver, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (po, pe) = p.communicate(input=bytes(cnf, encoding ='utf-8'))
@@ -241,4 +239,4 @@ if __name__ == "__main__":
     elif rc == 20:
         print("UNSAT")
     else:
-        print("ERROR: something went wrong with the solver")'''
+        print("ERROR: something went wrong with the solver")
