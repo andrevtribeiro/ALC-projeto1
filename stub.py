@@ -35,7 +35,6 @@ class Enc:
             mini = min(2*i,self.node_count-1)
             for e in range(i+1,mini+1):
                 if e%2 == 0:
-                    print([neg(self.v(i)),neg(self.l(i,e))])
                     self.add_constraint([neg(self.v(i)),neg(self.l(i,e))]) #2
                     self.add_constraint([neg(self.l(i,e)),self.r(i,e+1)]) #3
                     self.add_constraint([self.l(i,e),neg(self.r(i,e+1))]) #3
@@ -96,10 +95,10 @@ class Enc:
             self.add_constraint(lista) #10
         for j in range(1,self.node_count+1):
             for i in range(0,len(samples)):
-                #list_true=[neg(self.v(j)),self.c(j)]
-                #list_false=[neg(self.v(j)),neg(self.c(j))]
-                list_true=[neg(self.mk_and(self.v(j),neg(self.c(j))))]
-                list_false=[neg(self.mk_and(self.v(j),self.c(j)))]
+                list_true=[neg(self.v(j)),self.c(j)]
+                list_false=[neg(self.v(j)),neg(self.c(j))]
+                #list_true=[neg(self.mk_and(self.v(j),neg(self.c(j))))]
+                #list_false=[neg(self.mk_and(self.v(j),self.c(j)))]
                 for r in range(1,self.input_count+1):
                     if samples[i][-1] == 1:
                         if samples[i][r-1] == 0:
@@ -161,11 +160,16 @@ class Enc:
                 x=str_var.split('_')
                 if x[0] in ['a','l','r']:
                     print('{} {} {}'.format(x[0],x[1],x[2]))
-                elif x[1]=='v':
-                    if x[4]=="-c":
-                        print('{} {} 0'.format(x[4][1:],x[5]))
-                    else:
-                        print('{} {} 1'.format(x[4],x[5]))
+                elif x[0]=='c':
+                    aux=self.var_map[("v_"+x[1])]
+                    if aux in model and model[aux]:
+                        print('{} {} 1'.format(x[0],x[1]))
+            elif v in model and not model[v]:
+                x=str_var.split('_')
+                if x[0]=='c':
+                    aux=self.var_map[("v_"+x[1])]
+                    if aux in model and model[aux]:
+                        print('{} {} 0'.format(x[0],x[1]))    
 
         print('# === end of output')
 
