@@ -19,13 +19,13 @@ class Enc:
         self.fresh = 0
 
     def v(self,i): return 'v_{}'.format(i)
-    def l(self,i,e): return 'l_{}{}'.format(i,e)
-    def r(self,i,e): return 'r_{}{}'.format(i,e)
-    def p(self,i,e): return 'p_{}{}'.format(i,e)
-    def a(self,i,e): return 'a_{}{}'.format(i,e)
+    def l(self,i,e): return 'l_{}_{}'.format(i,e)
+    def r(self,i,e): return 'r_{}_{}'.format(i,e)
+    def p(self,i,e): return 'p_{}_{}'.format(i,e)
+    def a(self,i,e): return 'a_{}_{}'.format(i,e)
     def c(self,i): return 'c_{}'.format(i)
-    def d0(self,i,e): return 'd0_{}{}'.format(i,e)
-    def d1(self,i,e): return 'd1_{}{}'.format(i,e)
+    def d0(self,i,e): return 'd0_{}_{}'.format(i,e)
+    def d1(self,i,e): return 'd1_{}_{}'.format(i,e)
 
 
     def create_initial_constraints(self):
@@ -46,8 +46,7 @@ class Enc:
                     self.add_constraint([neg(self.p(e+1,i)),self.r(i,e+1)]) #5 right
                     self.add_constraint([self.p(e+1,i),neg(self.r(i,e+1))]) #5 right
 
-            if len(lefts)>1:
-                self.add_constraint(lefts) #4 pelo menos uma verdade
+            self.add_constraint(lefts)
 
         for j in range(2,self.node_count+1):
             mini=min(j-1,self.node_count)
@@ -76,7 +75,6 @@ class Enc:
                         list_d0 += [self.mk_and(self.p(j,i),self.d0(r,i))]
                         self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])                                                    #7
                     if j%2 == 0 and j <= self.node_count-1:
-                        
                         list_d1 += [self.mk_and(self.p(j,i),self.d1(r,i))]
                         list_d1 += [self.mk_and(self.a(r,i),self.l(i,j))]
                         self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])                                                    #8
@@ -97,13 +95,15 @@ class Enc:
                     self.add_constraint([neg(self.a(r,i)),neg(self.a(k,i))]) #10
             self.add_constraint(lista) #10
         for j in range(1,self.node_count+1):
-            list_true=[neg(self.v(j)),self.c(j)]
-            list_false=[neg(self.v(j)),neg(self.c(j))]
+            #list_true=[neg(self.v(j)),self.c(j)]
+            #list_false=[neg(self.v(j)),neg(self.c(j))]
+            list_true=[neg(self.mk_and(self.v(j),neg(self.c(j))))]
+            list_false=[neg(self.mk_and(self.v(j),self.c(j)))]
             for r in range(1,self.input_count+1):
                 for i in range(0,len(samples)):
                     if samples[i][-1] == 1:
                         if samples[i][r-1] == 0:
-                           list_true+=[self.d0(r,j)]#12
+                            list_true+=[self.d0(r,j)]#12
                         else:
                             list_true+=[self.d1(r,j)] #12
                     else:
@@ -151,6 +151,21 @@ class Enc:
         print('# === tree (TODO)')
         print('# === end of tree')
 
+    def print_output(self,model):
+        print('# === output')
+        for str_var in sorted(self.var_map.keys()):
+            v = self.var_map[str_var]
+            if v in model and model[v]:
+                x=str_var.split('_')
+                if x[0] in ['a','l','r']:
+                    print('{} {} {}'.format(x[0],x[1],x[2]))
+                elif x[1]=='v':
+                    if x[4]=="-c":
+                        print('{} {} 0'.format(x[4][1:],x[5]))
+                    else:
+                        print('{} {} 1'.format(x[4],x[5]))
+
+        print('# === end of output')
 
     def mk_cnf(self,print_comments):
         '''encode constraints as CNF in DIMACS'''
@@ -236,6 +251,7 @@ if __name__ == "__main__":
     lns = str(po, encoding ='utf-8').splitlines()
     if rc == 10:
         e.print_model(get_model(lns))
+        e.print_output(get_model(lns))
     elif rc == 20:
         print("UNSAT")
     else:
