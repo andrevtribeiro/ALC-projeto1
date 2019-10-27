@@ -35,6 +35,7 @@ class Enc:
             mini = min(2*i,self.node_count-1)
             for e in range(i+1,mini+1):
                 if e%2 == 0:
+                    print([neg(self.v(i)),neg(self.l(i,e))])
                     self.add_constraint([neg(self.v(i)),neg(self.l(i,e))]) #2
                     self.add_constraint([neg(self.l(i,e)),self.r(i,e+1)]) #3
                     self.add_constraint([self.l(i,e),neg(self.r(i,e+1))]) #3
@@ -46,7 +47,7 @@ class Enc:
                     self.add_constraint([neg(self.p(e+1,i)),self.r(i,e+1)]) #5 right
                     self.add_constraint([self.p(e+1,i),neg(self.r(i,e+1))]) #5 right
 
-            if len(lefts)>1:
+            if len(lefts)>0:
                 self.add_constraint(lefts) #4 pelo menos uma verdade
 
         for j in range(2,self.node_count+1):
@@ -76,13 +77,11 @@ class Enc:
                         list_d0 += [self.mk_and(self.p(j,i),self.d0(r,i))]
                         self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])                                                    #7
                     if j%2 == 0 and j <= self.node_count-1:
-                        
                         list_d1 += [self.mk_and(self.p(j,i),self.d1(r,i))]
                         list_d1 += [self.mk_and(self.a(r,i),self.l(i,j))]
                         self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])                                                    #8
                         self.add_constraint([self.d1(r,j),neg(self.mk_and(self.a(r,i),self.l(i,j)))])                                                     #8
                     else:
-                        
                         list_d1 += [self.mk_and(self.p(j,i),self.d1(r,i))]
                         self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])                                                    #8
                 self.add_constraint(list_d0)
@@ -97,13 +96,13 @@ class Enc:
                     self.add_constraint([neg(self.a(r,i)),neg(self.a(k,i))]) #10
             self.add_constraint(lista) #10
         for j in range(1,self.node_count+1):
-            list_true=[neg(self.v(j)),self.c(j)]
-            list_false=[neg(self.v(j)),neg(self.c(j))]
-            for r in range(1,self.input_count+1):
-                for i in range(0,len(samples)):
+            for i in range(0,len(samples)):
+                list_true=[neg(self.v(j)),self.c(j)]
+                list_false=[neg(self.v(j)),neg(self.c(j))]
+                for r in range(1,self.input_count+1):
                     if samples[i][-1] == 1:
                         if samples[i][r-1] == 0:
-                           list_true+=[self.d0(r,j)]#12
+                            list_true+=[self.d0(r,j)]#12
                         else:
                             list_true+=[self.d1(r,j)] #12
                     else:
@@ -111,8 +110,10 @@ class Enc:
                             list_false+=[self.d0(r,j)] #13
                         else:
                             list_false+=[self.d1(r,j)] #13
-            self.add_constraint(list_true)
-            self.add_constraint(list_false)
+                if samples[i][-1] == 1:
+                    self.add_constraint(list_true)
+                else:
+                    self.add_constraint(list_false)
 
 
     def add_constraint(self, constraint):
@@ -218,19 +219,19 @@ if __name__ == "__main__":
     print("# encoding")
     e = Enc(nms[0], nms[1])
     e.enc(samples)
-    
+
     print("# encoded constraints")
     print("# " + "\n# ".join(map(str, e.constraints)))
     print("# END encoded constraints")
     print("# sending to solver '" + solver + "'")
     cnf = e.mk_cnf(False)
-    #print(cnf)
+    print(cnf)
 
     p = subprocess.Popen(solver, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (po, pe) = p.communicate(input=bytes(cnf, encoding ='utf-8'))
-    if debug_solver:
-        print('\n'.join(lns), file=sys.stderr)
-        print(cnf, file=sys.stderr)
+    #if debug_solver:
+    #    print('\n'.join(lns), file=sys.stderr)
+    #    print(cnf, file=sys.stderr)
     print("# decoding result from solver")
     rc = p.returncode
     lns = str(po, encoding ='utf-8').splitlines()
