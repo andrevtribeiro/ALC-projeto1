@@ -28,7 +28,7 @@ class Enc:
     def d1(self,i,e): return 'd1_{}_{}'.format(i,e)
 
 
-    def create_initial_constraints(self):
+    def create_tree_constraints(self):
         self.add_constraint([neg(self.v(1))])
         for i in range(1,self.node_count+1):
             lefts = [self.v(i)]
@@ -57,7 +57,7 @@ class Enc:
                     self.add_constraint([neg(self.p(j,i)),neg(self.p(j,a))])
             self.add_constraint(parents)
 
-    def create_other_constraints(self,samples):
+    def create_decision_constraints(self,samples):
         for i in range(1,self.input_count+1):
             self.add_constraint([neg(self.d0(i,1))]) #7
             self.add_constraint([neg(self.d1(i,1))]) #8
@@ -169,7 +169,7 @@ class Enc:
                 if x[0]=='c':
                     aux=self.var_map[("v_"+x[1])]
                     if aux in model and model[aux]:
-                        print('{} {} 0'.format(x[0],x[1]))    
+                        print('{} {} 0'.format(x[0],x[1]))
 
         print('# === end of output')
 
@@ -200,8 +200,8 @@ class Enc:
         return rv
 
     def enc(self, samples):
-        self.create_initial_constraints()
-        self.create_other_constraints(samples)
+        self.create_tree_constraints()
+        self.create_decision_constraints(samples)
 
 def get_model(lns):
     vals=dict()
@@ -249,9 +249,9 @@ if __name__ == "__main__":
 
     p = subprocess.Popen(solver, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (po, pe) = p.communicate(input=bytes(cnf, encoding ='utf-8'))
-    #if debug_solver:
-    #    print('\n'.join(lns), file=sys.stderr)
-    #    print(cnf, file=sys.stderr)
+    if debug_solver:
+        print('\n'.join(lns), file=sys.stderr)
+        print(cnf, file=sys.stderr)
     print("# decoding result from solver")
     rc = p.returncode
     lns = str(po, encoding ='utf-8').splitlines()
