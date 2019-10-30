@@ -5,7 +5,7 @@
 # Copyright (C) 2019, Mikolas Janota
 import sys,subprocess
 
-solver = './lingeling-bcj-78ebb86-180517/lingeling'
+solver = './lingeling'
 
 def neg(l): return l[1:] if l[0] == '-' else '-'+l
 def var(l): return l[1:] if l[0] == '-' else l
@@ -54,8 +54,8 @@ class Enc:
             for i in range(j//2,mini+1):
                 parents+=[self.p(j,i)]
                 for a in range(i+1,mini+1):
-                    self.add_constraint([neg(self.p(j,i)),neg(self.p(j,a))])
-            self.add_constraint(parents)
+                    self.add_constraint([neg(self.p(j,i)),neg(self.p(j,a))])   #6
+            self.add_constraint(parents)  #6
 
     def create_decision_constraints(self,samples):
         for i in range(1,self.input_count+1):
@@ -69,19 +69,19 @@ class Enc:
                     if j%2 != 0 and j <= self.node_count and i != j-1:
                         list_d0 += [self.mk_and(self.p(j,i),self.d0(r,i))]
                         list_d0 += [self.mk_and(self.a(r,i),self.r(i,j))]
-                        self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])                                                    #7
-                        self.add_constraint([self.d0(r,j),neg(self.mk_and(self.a(r,i),self.r(i,j)))])                                                     #7
+                        self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])  #7
+                        self.add_constraint([self.d0(r,j),neg(self.mk_and(self.a(r,i),self.r(i,j)))])  #7
                     else:
                         list_d0 += [self.mk_and(self.p(j,i),self.d0(r,i))]
-                        self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))])                                                    #7
+                        self.add_constraint([self.d0(r,j),neg(self.mk_and(self.p(j,i),self.d0(r,i)))]) #7
                     if j%2 == 0 and j <= self.node_count-1:
                         list_d1 += [self.mk_and(self.p(j,i),self.d1(r,i))]
                         list_d1 += [self.mk_and(self.a(r,i),self.l(i,j))]
-                        self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])                                                    #8
-                        self.add_constraint([self.d1(r,j),neg(self.mk_and(self.a(r,i),self.l(i,j)))])                                                     #8
+                        self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))]) #8
+                        self.add_constraint([self.d1(r,j),neg(self.mk_and(self.a(r,i),self.l(i,j)))])  #8
                     else:
                         list_d1 += [self.mk_and(self.p(j,i),self.d1(r,i))]
-                        self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))])                                                    #8
+                        self.add_constraint([self.d1(r,j),neg(self.mk_and(self.p(j,i),self.d1(r,i)))]) #8
                 self.add_constraint(list_d0)
                 self.add_constraint(list_d1)
         for i in range(1,self.node_count+1):
@@ -97,8 +97,6 @@ class Enc:
             for i in range(0,len(samples)):
                 list_true=[neg(self.v(j)),self.c(j)]
                 list_false=[neg(self.v(j)),neg(self.c(j))]
-                #list_true=[neg(self.mk_and(self.v(j),neg(self.c(j))))]
-                #list_false=[neg(self.mk_and(self.v(j),self.c(j)))]
                 for r in range(1,self.input_count+1):
                     if samples[i][-1] == 1:
                         if samples[i][r-1] == 0:
@@ -245,7 +243,6 @@ if __name__ == "__main__":
     print("# END encoded constraints")
     print("# sending to solver '" + solver + "'")
     cnf = e.mk_cnf(False)
-    print(cnf)
 
     p = subprocess.Popen(solver, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (po, pe) = p.communicate(input=bytes(cnf, encoding ='utf-8'))
